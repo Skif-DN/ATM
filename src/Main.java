@@ -3,5 +3,7 @@ public class Main {
         BankSystem bankSystem = new BankSystem();
         ATM atm = new ATM(bankSystem);
         atm.start();
+        //comment
+        //second comment
     }
 }
