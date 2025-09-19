@@ -2,9 +2,12 @@ import java.io.Serializable;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.UUID;
 
 public class BankAccount implements Serializable {
     private static final long serialVersionUID = 1L;
+    private String userName;
+    private String accountId;
     private String firstName;
     private String lastName;
     private String fullName;
@@ -19,7 +22,9 @@ public class BankAccount implements Serializable {
     private LocalDateTime lastDepositAt;
     private LocalDateTime lastWithdrawAt;
 
-    public BankAccount(String firstName, String lastName, String pin, double balance) {
+    public BankAccount(String firstName, String lastName, String userName, String pin, double balance) {
+        this.accountId = UUID.randomUUID().toString();
+        this.userName = userName;
         this.firstName = firstName;
         this.lastName = lastName;
         this.fullName = firstName + " " + lastName;
@@ -43,6 +48,10 @@ public class BankAccount implements Serializable {
 
     public String getFullname(){
         return fullName;
+    }
+
+    public String getUserName(){
+        return userName;
     }
 
     public boolean checkPin(String inputPin) {
@@ -120,6 +129,10 @@ public class BankAccount implements Serializable {
         isBlocked = false;
         failedAttempts = 0;
         blockedAt = null;
+    }
+
+    public String getAccountId(){
+        return accountId;
     }
 
     public String getFormattedCreatedAt() {

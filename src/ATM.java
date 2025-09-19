@@ -53,8 +53,11 @@ public class ATM {
         String lastName = scanner.nextLine();
         String formattedLastName = Utils.capitalizeFirstLetter(lastName);
 
-        if (system.getAccount(formattedFirstName, formattedLastName) != null) {
-            System.out.println("An account with that name already exists!");
+        System.out.print("Enter your username: ");
+        String userName = scanner.nextLine();
+
+        if (system.getAccountByUserName(userName) != null) {
+            System.out.println("This username is already taken!");
             return;
         }
 
@@ -82,23 +85,16 @@ public class ATM {
             return;
         }
 
-        BankAccount newAccount = new BankAccount(formattedFirstName, formattedLastName, pin, initialDeposit);
+        BankAccount newAccount = new BankAccount(formattedFirstName, formattedLastName, userName, pin, initialDeposit);
         system.addAccount(newAccount);
         System.out.println("Account created successfully!");
     }
 
     private void login() {
-        System.out.print("Enter your first name: ");
-        String firstName = scanner.nextLine();
-        String formattedFirstName = Utils.capitalizeFirstLetter(firstName);
+        System.out.print("Enter your username: ");
+        String userName = scanner.nextLine();
 
-        System.out.print("Enter your last name: ");
-        String lastName = scanner.nextLine();
-        String formattedLastName = Utils.capitalizeFirstLetter(lastName);
-
-        String fullName = formattedFirstName + " " + formattedLastName;
-
-        BankAccount account = system.getAccount(formattedFirstName, formattedLastName);
+        BankAccount account = system.getAccountByUserName(userName);
 
         if (account == null) {
             System.out.println("Account not found");
@@ -107,6 +103,12 @@ public class ATM {
 
         if (account.isBlocked()) {
             System.out.println("This account is blocked due to multiple failed PIN attempts.");
+            Storage.saveAccounts(system.getAccounts());
+            return;
+        }
+
+        if (account.isDeleted()) {
+            System.out.println(("This account has been deleted!"));
             Storage.saveAccounts(system.getAccounts());
             return;
         }
@@ -121,7 +123,7 @@ public class ATM {
             }
 
             if (account.checkPin(pin)) {
-                System.out.println("Welcome, " + fullName + "!");
+                System.out.println("Welcome, " + account.getFullname() + "!");
                 Storage.saveAccounts(system.getAccounts());
                 menu(account);
                 return;
@@ -207,7 +209,7 @@ public class ATM {
 
                         System.out.print("Confirm new PIN: ");
                         String newPin2 = scanner.nextLine();
-                        if (!newPin1.equals(newPin2)) {
+                        if (!newPin1.equals(newPin2) || !newPin2.matches("\\d{4}")) {
                             System.out.println("PINs do not match!");
                             break;
                         }
@@ -215,7 +217,7 @@ public class ATM {
                         account.setPin(newPin1);
                         Storage.saveAccounts(system.getAccounts());
                         System.out.println("PIN successfully changed!");
-                        break;
+                        return;
 
                     case "5":
                         if (account.getBalance().compareTo(BigDecimal.ZERO) == 0) {
@@ -225,7 +227,7 @@ public class ATM {
                                 confirm = scanner.nextLine().trim().toLowerCase();
 
                                 if (confirm.equals("yes")) {
-                                    system.removeAccount(account.getFullname());
+                                    system.removeAccount(account.getAccountId());
                                     System.out.println("Account successfully closed.");
                                     return;
                                 } else if (confirm.equals("no")) {

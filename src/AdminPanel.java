@@ -38,7 +38,7 @@ public class AdminPanel {
                     boolean hasActive = false;
                     for (BankAccount acc : system.getAccounts().values()) {
                         if (!acc.isBlocked() && !acc.isDeleted()) {
-                            System.out.println(activeIndex + ". " + acc.getFullname() + " | Balance: $" + acc.getBalance() + " | Created: " + acc.getFormattedCreatedAt());
+                            System.out.println(activeIndex + ". [ID "+ acc.getAccountId() + "] " + acc.getFullname() + "\n Username: " + acc.getUserName() + "\n Balance: $" + acc.getBalance() + "\n Created: " + acc.getFormattedCreatedAt() + "\n");
                             activeIndex ++;
                             hasActive = true;
                         }
@@ -54,7 +54,7 @@ public class AdminPanel {
                     boolean hasBlocked = false;
                     for (BankAccount acc : system.getAccounts().values()) {
                         if (acc.isBlocked() && !acc.isDeleted()) {
-                            System.out.println(blockedIndex + ". " + acc.getFullname() + " | Blocked on: " + acc.getFormattedBlockedAt());
+                            System.out.println(blockedIndex + ". [ID "+ acc.getAccountId() + "] " + acc.getFullname() + "\n Blocked on: " + acc.getFormattedBlockedAt() + "\n");
                             blockedIndex ++;
                             hasBlocked = true;
                         }
@@ -70,7 +70,7 @@ public class AdminPanel {
                     boolean hasDeleted = false;
                     for (BankAccount acc : system.getAccounts().values()) {
                         if (acc.isDeleted() && !acc.isBlocked()) {
-                            System.out.println(deletedIndex + ". " + acc.getFullname() + " | Deleted on: " + acc.getFormattedDeletedAt());
+                            System.out.println(deletedIndex + ". [ID "+ acc.getAccountId() + "] " + acc.getFullname() + "\n Deleted on: " + acc.getFormattedDeletedAt() + "\n");
                             deletedIndex ++;
                             hasDeleted = true;
                         }
@@ -81,44 +81,30 @@ public class AdminPanel {
                     break;
 
                 case "4":
-                    System.out.print("Enter account first name: ");
-                    String unblockFirstName = scanner.nextLine();
-                    unblockFirstName = Utils.capitalizeFirstLetter(unblockFirstName);
+                    System.out.print("Enter account ID to unblock: ");
+                    String unblockId = scanner.nextLine().trim();
 
-                    System.out.print("Enter account last name: ");
-                    String unblockLastName = scanner.nextLine();
-                    unblockLastName = Utils.capitalizeFirstLetter(unblockLastName);
+                    BankAccount unblockAcc = system.getAccountById(unblockId);
 
-                    String fullName = unblockFirstName + " " + unblockLastName;
-
-                    BankAccount acc = system.getAccount(unblockFirstName, unblockLastName);
-
-                    if (acc != null && acc.isBlocked()) {
-                        acc.unblock();
+                    if (unblockAcc != null && unblockAcc.isBlocked()) {
+                        unblockAcc.unblock();
                         Storage.saveAccounts(system.getAccounts());
-                        System.out.println("Account '" + fullName + "' has been unblocked.");
+                        System.out.println("Account '" + unblockAcc.getFullname() + "' has been unblocked.");
                     } else {
                         System.out.println("Account not found or already active.");
                     }
                     break;
 
                 case "5":
-                    System.out.print("Enter account first name: ");
-                    String restoreFirstName = scanner.nextLine();
-                    restoreFirstName = Utils.capitalizeFirstLetter(restoreFirstName);
+                    System.out.print("Enter account ID to restore: ");
+                    String restoreId = scanner.nextLine();
 
-                    System.out.print("Enter account last name: ");
-                    String restoreLastName = scanner.nextLine();
-                    restoreLastName = Utils.capitalizeFirstLetter(restoreLastName);
-
-                    String restoreFullName = restoreFirstName + " " + restoreLastName;
-
-                    BankAccount restoreAcc = system.getAccount(restoreFirstName, restoreLastName);
+                    BankAccount restoreAcc = system.getAccountById(restoreId);
 
                     if (restoreAcc != null && restoreAcc.isDeleted()) {
                         restoreAcc.restore();
                         Storage.saveAccounts(system.getAccounts());
-                        System.out.println("Account '" + restoreFullName + "' has been restored.");
+                        System.out.println("Account '" + restoreAcc.getFullname() + "' has been restored.");
                     } else {
                         System.out.println("Account not found or not deleted.");
                     }
