@@ -1,3 +1,7 @@
+package bank;
+
+import storage.Storage;
+import utils.Utils;
 
 import java.math.BigDecimal;
 import java.util.Scanner;
@@ -146,9 +150,10 @@ public class ATM {
                 System.out.println("1. Account info");
                 System.out.println("2. Withdraw money");
                 System.out.println("3. Deposit money");
-                System.out.println("4. Change PIN");
-                System.out.println("5. Close account");
-                System.out.println("6. Return to main menu");
+                System.out.println("4. Transfer money");
+                System.out.println("5. Change PIN");
+                System.out.println("6. Close account");
+                System.out.println("7. Return to main menu");
                 System.out.print("Choose option: ");
                 String choice = scanner.nextLine();
 
@@ -192,7 +197,30 @@ public class ATM {
                         }
                         break;
 
-                    case "4":
+                    case"4":
+                        System.out.println("Enter recipient's username: ");
+                        String recipientUserName = scanner.nextLine().trim();
+
+                        BankAccount recipient = system.getAccountByUserName(recipientUserName);
+
+                        if (recipient == null) {
+                            System.out.println("Recipient not found");
+                            break;
+                        }
+
+                        System.out.println("Enter amount to transfer: ");
+                        double amount;
+                        try {
+                            amount = Double.parseDouble(scanner.nextLine());
+                        } catch (NumberFormatException e){
+                            System.out.println("Invalid amount");
+                            break;
+                        }
+
+                        system.transfer(account.getUserName(), recipientUserName, amount);
+                        break;
+
+                    case "5":
                         System.out.print("Enter current PIN: ");
                         String currentPin = scanner.nextLine();
                         if (!account.checkPin(currentPin)) {
@@ -219,7 +247,7 @@ public class ATM {
                         System.out.println("PIN successfully changed!");
                         return;
 
-                    case "5":
+                    case "6":
                         if (account.getBalance().compareTo(BigDecimal.ZERO) == 0) {
                             String confirm;
                             while (true) {
@@ -242,11 +270,132 @@ public class ATM {
                         }
                         break;
 
-                    case "6":
+                    case "7":
                         return;
                     default:
                         System.out.println("Incorrect choice");
                 }
             }
         }
+
+    public static class AdminPanel {
+        private BankSystem system;
+        private Scanner scanner = new Scanner(System.in);
+
+        public AdminPanel(BankSystem system) {
+            this.system = system;
+        }
+
+        void adminPanel() {
+            final String ADMIN_PIN = "0000";
+
+
+            System.out.print("Enter admin PIN: ");
+            String inputPin = scanner.nextLine().trim();
+
+            if (!inputPin.equals(ADMIN_PIN)) {
+                System.out.println("Wrong PIN!");
+                return;
+            }
+
+            while (true) {
+                System.out.println("\n--- ADMIN MENU ---");
+                System.out.println("1. View all active accounts");
+                System.out.println("2. View blocked accounts");
+                System.out.println("3. View deleted accounts");
+                System.out.println("4. Unblock account");
+                System.out.println("5. Restore deleted account");
+                System.out.println("6. Exit admin panel");
+                System.out.print("Choose option: ");
+                String choice = scanner.nextLine();
+
+                switch (choice) {
+                    case "1":
+                        System.out.println("\n--- Active Accounts ---");
+                        int activeIndex = 1;
+                        boolean hasActive = false;
+                        for (BankAccount acc : system.getAccounts().values()) {
+                            if (!acc.isBlocked() && !acc.isDeleted()) {
+                                System.out.println(activeIndex + ". [ID "+ acc.getAccountId() + "] " + acc.getFullname() + "\n Username: " + acc.getUserName() + "\n Balance: $" + acc.getBalance() + "\n Created: " + acc.getFormattedCreatedAt() + "\n");
+                                activeIndex ++;
+                                hasActive = true;
+                            }
+                        }
+                        if (!hasActive) {
+                            System.out.println("No active accounts");
+                        }
+                        break;
+
+                    case "2":
+                        System.out.println("\n--- Blocked Accounts ---");
+                        int blockedIndex = 1;
+                        boolean hasBlocked = false;
+                        for (BankAccount acc : system.getAccounts().values()) {
+                            if (acc.isBlocked() && !acc.isDeleted()) {
+                                System.out.println(blockedIndex + ". [ID "+ acc.getAccountId() + "] " + acc.getFullname() + "\n Blocked on: " + acc.getFormattedBlockedAt() + "\n");
+                                blockedIndex ++;
+                                hasBlocked = true;
+                            }
+                        }
+                        if (!hasBlocked) {
+                            System.out.println("No blocked accounts");
+                        }
+                        break;
+
+                    case "3":
+                        System.out.println("\n--- Deleted Accounts ---");
+                        int deletedIndex = 1;
+                        boolean hasDeleted = false;
+                        for (BankAccount acc : system.getAccounts().values()) {
+                            if (acc.isDeleted() && !acc.isBlocked()) {
+                                System.out.println(deletedIndex + ". [ID "+ acc.getAccountId() + "] " + acc.getFullname() + "\n Deleted on: " + acc.getFormattedDeletedAt() + "\n");
+                                deletedIndex ++;
+                                hasDeleted = true;
+                            }
+                        }
+                        if (!hasDeleted) {
+                            System.out.println("No deleted accounts");
+                        }
+                        break;
+
+                    case "4":
+                        System.out.print("Enter account ID to unblock: ");
+                        String unblockId = scanner.nextLine().trim();
+
+                        BankAccount unblockAcc = system.getAccountById(unblockId);
+
+                        if (unblockAcc != null && unblockAcc.isBlocked()) {
+                            unblockAcc.unblock();
+                            Storage.saveAccounts(system.getAccounts());
+                            System.out.println("Account '" + unblockAcc.getFullname() + "' has been unblocked.");
+                        } else {
+                            System.out.println("Account not found or already active.");
+                        }
+                        break;
+
+                    case "5":
+                        System.out.print("Enter account ID to restore: ");
+                        String restoreId = scanner.nextLine();
+
+                        BankAccount restoreAcc = system.getAccountById(restoreId);
+
+                        if (restoreAcc != null && restoreAcc.isDeleted()) {
+                            restoreAcc.restore();
+                            Storage.saveAccounts(system.getAccounts());
+                            System.out.println("Account '" + restoreAcc.getFullname() + "' has been restored.");
+                        } else {
+                            System.out.println("Account not found or not deleted.");
+                        }
+                        break;
+
+                    case "6":
+                        return;
+
+                    default:
+                        System.out.println("Wrong choice!");
+                }
+
+            }
+        }
+    }
 }

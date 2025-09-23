@@ -7,8 +7,8 @@ This repository contains my educational Java projects, created to practice progr
 
 ## 📂 Project
 
-### 🔹 ATM (Banking System)
-- Console application simulating an ATM.  
+### 🔹 bank.ATM (Banking System)
+- Console application simulating an bank.ATM.  
 - **Features:**
   - User creation
   - Check account balance

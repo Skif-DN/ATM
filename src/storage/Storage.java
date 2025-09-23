@@ -1,3 +1,7 @@
+package storage;
+
+import bank.BankAccount;
+
 import java.io.*;
 import java.util.HashMap;
 
@@ -21,4 +25,5 @@ public class Storage {
             return new HashMap<>();
         }
     }
+
 }
