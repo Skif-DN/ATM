@@ -2,6 +2,7 @@ package bank;
 
 import security.Security;
 
+import java.io.Serial;
 import java.io.Serializable;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -9,6 +10,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.UUID;
 
 public class BankAccount implements Serializable {
+    @Serial
     private static final long serialVersionUID = 1L;
     private String userName;
     private String accountId;

@@ -1,6 +1,7 @@
 package bank;
 
-import storage.Storage;
+import storage.AccountsStorage;
+import storage.TransactionsStorage;
 import transactions.Transactions;
 
 import java.util.ArrayList;
@@ -12,19 +13,20 @@ public class BankSystem {
     private List<Transactions> transactions = new ArrayList<>();
 
     public BankSystem() {
-        this.accounts = Storage.loadAccounts();
+        this.accounts = AccountsStorage.loadAccounts();
+        this.transactions = TransactionsStorage.loadTransactions();
     }
 
     public void addAccount(BankAccount account) {
         accounts.put(account.getAccountId(), account);
-        Storage.saveAccounts(accounts);
+        AccountsStorage.saveAccounts(accounts);
     }
 
     public void removeAccount(String accountId) {
         BankAccount account = accounts.get(accountId);
         if (account != null) {
             account.delete();
-            Storage.saveAccounts(accounts);
+            AccountsStorage.saveAccounts(accounts);
         }
     }
 
@@ -68,6 +70,7 @@ public class BankSystem {
             if (from.getBalance().doubleValue() < amount){
                 Transactions transaction = new Transactions(from.getAccountId(), to.getAccountId(), amount, "FAILED", "Insufficient funds");
                 transactions.add(transaction);
+                TransactionsStorage.saveTransactions(transactions);
                 System.out.println("Not enough founds!");
                 return;
             }
@@ -77,6 +80,8 @@ public class BankSystem {
 
             Transactions transaction = new Transactions(from.getAccountId(), to.getAccountId(), amount, "SUCCSESS", "Trasaction completed");
             transactions.add(transaction);
+            AccountsStorage.saveAccounts(accounts);
+            TransactionsStorage.saveTransactions(transactions);
             System.out.println("Transfer successful!");
         } catch (Exception e){
             System.out.println("Transfer failed: " + e.getMessage());

@@ -1,6 +1,6 @@
 package bank;
 
-import storage.Storage;
+import storage.AccountsStorage;
 
 import java.util.Scanner;
 
@@ -92,7 +92,7 @@ public class AdminPanel {
 
                     if (unblockAcc != null && unblockAcc.isBlocked()) {
                         unblockAcc.unblock();
-                        Storage.saveAccounts(system.getAccounts());
+                        AccountsStorage.saveAccounts(system.getAccounts());
                         System.out.println("Account '" + unblockAcc.getFullname() + "' has been unblocked.");
                     } else {
                         System.out.println("Account not found or already active.");
@@ -107,7 +107,7 @@ public class AdminPanel {
 
                     if (restoreAcc != null && restoreAcc.isDeleted()) {
                         restoreAcc.restore();
-                        Storage.saveAccounts(system.getAccounts());
+                        AccountsStorage.saveAccounts(system.getAccounts());
                         System.out.println("Account '" + restoreAcc.getFullname() + "' has been restored.");
                     } else {
                         System.out.println("Account not found or not deleted.");

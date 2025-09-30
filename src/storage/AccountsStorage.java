@@ -5,7 +5,7 @@ import bank.BankAccount;
 import java.io.*;
 import java.util.HashMap;
 
-public class Storage {
+public class AccountsStorage {
     private static final String FILE_NAME = "accounts.dat";
 
     public static void saveAccounts(HashMap<String, BankAccount> accounts) {

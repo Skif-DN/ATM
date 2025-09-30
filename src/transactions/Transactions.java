@@ -1,10 +1,14 @@
 package transactions;
 
+import bank.BankSystem;
+
+import java.io.Serial;
 import java.io.Serializable;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
 public class Transactions implements Serializable {
+    @Serial
     private static final long serialVersionUID = 1L;
 
     private String transactionId;
@@ -25,12 +29,27 @@ public class Transactions implements Serializable {
         this.dateTime = LocalDateTime.now();
     }
 
+
+    public String getFromAccountId (){
+        return this.fromAccountId;
+    }
+
+    public String getToAccountId(){
+        return this.toAccountId;
+    }
+
+    @Override
     public String toString(){
+        BankSystem system = new BankSystem();
+        String fromUser = system.getAccountById(fromAccountId) != null ? system.getAccountById(fromAccountId).getUserName() : "Unknown";
+        String toUser   = system.getAccountById(toAccountId) != null ? system.getAccountById(toAccountId).getUserName() : "Unknown";
+
+
         return "Transaction{" +
                 "id='" + transactionId + '\'' +
-                ", from='" + fromAccountId + '\'' +
-                ", to='" + toAccountId + '\'' +
-                ", amount=" + amount +
+                ", from='" + fromUser + '\'' +
+                ", to='" + toUser + '\'' +
+                ", amount=$" + amount +
                 ", date=" + dateTime +
                 ", status='" + status + '\'' +
                 ", message='" + message + '\'' +

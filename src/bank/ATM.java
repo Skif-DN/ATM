@@ -1,6 +1,8 @@
 package bank;
 
-import storage.Storage;
+import storage.AccountsStorage;
+import storage.TransactionsStorage;
+import transactions.Transactions;
 import utils.Utils;
 
 import java.math.BigDecimal;
@@ -107,13 +109,13 @@ public class ATM {
 
         if (account.isBlocked()) {
             System.out.println("This account is blocked due to multiple failed PIN attempts.");
-            Storage.saveAccounts(system.getAccounts());
+            AccountsStorage.saveAccounts(system.getAccounts());
             return;
         }
 
         if (account.isDeleted()) {
             System.out.println(("This account has been deleted!"));
-            Storage.saveAccounts(system.getAccounts());
+            AccountsStorage.saveAccounts(system.getAccounts());
             return;
         }
 
@@ -128,13 +130,13 @@ public class ATM {
 
             if (account.checkPin(pin)) {
                 System.out.println("Welcome, " + account.getFullname() + "!");
-                Storage.saveAccounts(system.getAccounts());
+                AccountsStorage.saveAccounts(system.getAccounts());
                 menu(account);
                 return;
             } else {
                 if (account.isBlocked()) {
                     System.out.println("Account has been blocked due to 3 failed attempts!");
-                    Storage.saveAccounts(system.getAccounts());
+                    AccountsStorage.saveAccounts(system.getAccounts());
                     return;
                 } else {
                     System.out.println("Incorrect PIN! Try again or type \"exit\" to cancel");
@@ -151,9 +153,10 @@ public class ATM {
                 System.out.println("2. Withdraw money");
                 System.out.println("3. Deposit money");
                 System.out.println("4. Transfer money");
-                System.out.println("5. Change PIN");
-                System.out.println("6. Close account");
-                System.out.println("7. Return to main menu");
+                System.out.println("5. Transactions");
+                System.out.println("6. Change PIN");
+                System.out.println("7. Close account");
+                System.out.println("8. Return to main menu");
                 System.out.print("Choose option: ");
                 String choice = scanner.nextLine();
 
@@ -164,7 +167,7 @@ public class ATM {
                         System.out.println("Balance: $" + account.getBalance());
                         System.out.println("Created: " + account.getFormattedCreatedAt());
                         System.out.println("Last deposit: " + account.getFormattedLastDepositAt());
-                        System.out.println("Last withdrawal: " + account.getFormattedLastWithdrawAt());
+                        System.out.println("Last withdraw: " + account.getFormattedLastWithdrawAt());
                         break;
 
                     case "2":
@@ -174,7 +177,7 @@ public class ATM {
                             double amountWithdraw = Double.parseDouble(withdrawInput);
                             if (account.withdraw(amountWithdraw)) {
                                 System.out.println("Money is withdrawn");
-                                Storage.saveAccounts(system.getAccounts());
+                                AccountsStorage.saveAccounts(system.getAccounts());
                             } else {
                                 System.out.println("Not enough funds!");
                             }
@@ -190,7 +193,7 @@ public class ATM {
                         try {
                             double amountDeposit = Double.parseDouble(depositInput);
                             account.deposit(amountDeposit);
-                            Storage.saveAccounts(system.getAccounts());
+                            AccountsStorage.saveAccounts(system.getAccounts());
                             System.out.println("Money deposited");
                         } catch (NumberFormatException e) {
                             System.out.println("Invalid amount!");
@@ -208,7 +211,7 @@ public class ATM {
                             break;
                         }
 
-                        System.out.println("Enter amount to transfer: ");
+                        System.out.println("Enter amount to transfer $: ");
                         double amount;
                         try {
                             amount = Double.parseDouble(scanner.nextLine());
@@ -221,6 +224,21 @@ public class ATM {
                         break;
 
                     case "5":
+                        System.out.println("\n--- Your Transactions ---");
+                        boolean hasTx = false;
+                        for (Transactions tx : system.getTransactions()) {
+                            if (tx.getFromAccountId().equals(account.getAccountId()) ||
+                                    tx.getToAccountId().equals(account.getAccountId())) {
+                                System.out.println(tx);  // тут викличеться toString()
+                                hasTx = true;
+                            }
+                        }
+                        if (!hasTx) {
+                            System.out.println("No transactions found.");
+                        }
+                        break;
+
+                    case "6":
                         System.out.print("Enter current PIN: ");
                         String currentPin = scanner.nextLine();
                         if (!account.checkPin(currentPin)) {
@@ -243,11 +261,11 @@ public class ATM {
                         }
 
                         account.setPin(newPin1);
-                        Storage.saveAccounts(system.getAccounts());
+                        AccountsStorage.saveAccounts(system.getAccounts());
                         System.out.println("PIN successfully changed!");
                         return;
 
-                    case "6":
+                    case "7":
                         if (account.getBalance().compareTo(BigDecimal.ZERO) == 0) {
                             String confirm;
                             while (true) {
@@ -270,7 +288,7 @@ public class ATM {
                         }
                         break;
 
-                    case "7":
+                    case "8":
                         return;
                     default:
                         System.out.println("Incorrect choice");
