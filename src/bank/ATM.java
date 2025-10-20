@@ -1,11 +1,11 @@
 package bank;
 
 import storage.AccountsStorage;
-import storage.TransactionsStorage;
 import transactions.Transactions;
 import utils.Utils;
 
 import java.math.BigDecimal;
+import java.util.List;
 import java.util.Scanner;
 
 public class ATM {
@@ -22,8 +22,8 @@ public class ATM {
             System.out.println("1. Create account");
             System.out.println("2. Enter to account");
             System.out.println("3. Admin panel");
-            System.out.println("4. EXIT");
-            System.out.print("Choose option: ");
+            System.out.println("0. EXIT");
+            System.out.print("Your choice: ");
             String choice = scanner.nextLine();
 
             switch (choice) {
@@ -40,9 +40,9 @@ public class ATM {
                     admin.adminPanel();
                     break;
 
-                case "4":
+                case "0":
                     System.out.println("Good Bye! \nExiting...");
-                    return;
+                    System.exit(0);
 
                 default:
                     System.out.println("Incorrect choice!");
@@ -146,18 +146,96 @@ public class ATM {
         }
     }
 
+    public void transactions(BankAccount account){
+        Scanner scanner = new Scanner(System.in);
+
+        while (true) {
+            System.out.println("\n--- Transactions ---");
+            System.out.println("1. Transfer money");
+            System.out.println("2. Show all transactions");
+            System.out.println("3. Show transactions by sending");
+            System.out.println("4. Show transactions by receiving");
+            System.out.println("0. Return to back menu");
+
+            System.out.print("Your choice: ");
+            String choice = scanner.nextLine();
+
+            switch (choice) {
+                case "1":
+                    System.out.println("Enter recipient's username: ");
+                    String recipientUserName = scanner.nextLine().trim();
+
+                    BankAccount recipient = system.getAccountByUserName(recipientUserName);
+
+                    if (recipient == null) {
+                        System.out.println("Recipient not found");
+                        break;
+                    }
+
+                    System.out.println("Enter amount to transfer $: ");
+                    double amount;
+                    try {
+                        amount = Double.parseDouble(scanner.nextLine());
+                    } catch (NumberFormatException e){
+                        System.out.println("Invalid amount");
+                        break;
+                    }
+
+                    system.transfer(account.getUserName(), recipientUserName, amount);
+                    break;
+
+                case "2":
+                    System.out.println("\n--- Your Transactions ---");
+
+                    List<Transactions> transactionsList = system.getTransactions().stream().filter(tx -> tx.getFromAccountId().equals(account.getAccountId()) ||
+                            tx.getToAccountId().equals(account.getAccountId())).toList();
+
+                    if(transactionsList.isEmpty()){
+                        System.out.println("No transactions found.");
+                    } else {
+                        transactionsList.forEach(System.out::println);
+                    }
+                    break;
+
+                case "3":
+                    System.out.println("\n--- Your Transactions by sending ---");
+                    List<Transactions> transactionsListBySending = system.getTransactions().stream().filter(tx -> tx.getFromAccountId().equals(account.getAccountId())).toList();
+
+                    if(transactionsListBySending.isEmpty()){
+                        System.out.println("No transactions found.");
+                    } else {
+                        transactionsListBySending.forEach(System.out::println);
+                    }
+                    break;
+
+                case "4":
+                    System.out.println("\n--- Your Transactions by receiving ---");
+                    List<Transactions> transactionsListByReceiving = system.getTransactions().stream().filter(tx -> tx.getToAccountId().equals(account.getAccountId())).toList();
+
+                    if(transactionsListByReceiving.isEmpty()){
+                        System.out.println("No transactions found.");
+                    } else {
+                        transactionsListByReceiving.forEach(System.out::println);
+                    }
+                    break;
+
+                case"0":
+                    return;
+            }
+        }
+    }
+
         private void menu (BankAccount account){
             while (true) {
                 System.out.println("\n--- Account MENU ---");
                 System.out.println("1. Account info");
                 System.out.println("2. Withdraw money");
                 System.out.println("3. Deposit money");
-                System.out.println("4. Transfer money");
-                System.out.println("5. Transactions");
-                System.out.println("6. Change PIN");
-                System.out.println("7. Close account");
-                System.out.println("8. Return to main menu");
-                System.out.print("Choose option: ");
+                System.out.println("4. Transactions");
+                System.out.println("5. Change PIN");
+                System.out.println("6. Close account");
+                System.out.println("0. Return to main menu");
+                System.out.print("Your choice: ");
                 String choice = scanner.nextLine();
 
                 switch (choice) {
@@ -200,45 +278,11 @@ public class ATM {
                         }
                         break;
 
-                    case"4":
-                        System.out.println("Enter recipient's username: ");
-                        String recipientUserName = scanner.nextLine().trim();
-
-                        BankAccount recipient = system.getAccountByUserName(recipientUserName);
-
-                        if (recipient == null) {
-                            System.out.println("Recipient not found");
-                            break;
-                        }
-
-                        System.out.println("Enter amount to transfer $: ");
-                        double amount;
-                        try {
-                            amount = Double.parseDouble(scanner.nextLine());
-                        } catch (NumberFormatException e){
-                            System.out.println("Invalid amount");
-                            break;
-                        }
-
-                        system.transfer(account.getUserName(), recipientUserName, amount);
+                    case "4":
+                        transactions(account);
                         break;
 
                     case "5":
-                        System.out.println("\n--- Your Transactions ---");
-                        boolean hasTx = false;
-                        for (Transactions tx : system.getTransactions()) {
-                            if (tx.getFromAccountId().equals(account.getAccountId()) ||
-                                    tx.getToAccountId().equals(account.getAccountId())) {
-                                System.out.println(tx);  // тут викличеться toString()
-                                hasTx = true;
-                            }
-                        }
-                        if (!hasTx) {
-                            System.out.println("No transactions found.");
-                        }
-                        break;
-
-                    case "6":
                         System.out.print("Enter current PIN: ");
                         String currentPin = scanner.nextLine();
                         if (!account.checkPin(currentPin)) {
@@ -265,7 +309,7 @@ public class ATM {
                         System.out.println("PIN successfully changed!");
                         return;
 
-                    case "7":
+                    case "6":
                         if (account.getBalance().compareTo(BigDecimal.ZERO) == 0) {
                             String confirm;
                             while (true) {
@@ -288,8 +332,9 @@ public class ATM {
                         }
                         break;
 
-                    case "8":
+                    case "0":
                         return;
+
                     default:
                         System.out.println("Incorrect choice");
                 }

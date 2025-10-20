@@ -31,7 +31,7 @@ public class AdminPanel {
             System.out.println("3. View deleted accounts");
             System.out.println("4. Unblock account");
             System.out.println("5. Restore deleted account");
-            System.out.println("6. Exit admin panel");
+            System.out.println("0. Exit admin panel");
             System.out.print("Choose option: ");
             String choice = scanner.nextLine();
 
@@ -114,7 +114,7 @@ public class AdminPanel {
                     }
                     break;
 
-                case "6":
+                case "0":
                     return;
 
                 default:
